@@ -9,9 +9,11 @@ namespace Exam1.Controllers
     public class PdfGeneratorController : ControllerBase
     {
         public readonly PdfGerenatorService _gerenatorService;
-        public PdfGeneratorController(PdfGerenatorService service)
+        private readonly ILogger<PdfGeneratorController> _logger;
+        public PdfGeneratorController(PdfGerenatorService service, ILogger<PdfGeneratorController> logger)
         {
             _gerenatorService = service;
+            _logger = logger;
         }
 
         [HttpGet("PDF-FileReport")]
@@ -32,6 +34,7 @@ namespace Exam1.Controllers
             _gerenatorService.GenerateReport(bookedTicket, filepath);
 
             var fileBytes = System.IO.File.ReadAllBytes(filepath);
+            _logger.LogInformation("Successfully convert from Json to PDF");
             return File(fileBytes, "application/pdf", "BookedTicketsReport.pdf");
         }
     }

@@ -12,9 +12,11 @@ namespace Exam1.Controllers
     public class BookedTicketController : ControllerBase
     {
         public readonly BookedTicketServices _service;
-        public BookedTicketController(BookedTicketServices service, PdfGerenatorService pdfService)
+        private readonly ILogger<BookedTicketController> _logger;
+        public BookedTicketController(BookedTicketServices service, ILogger<BookedTicketController> logger)
         {
             _service = service;
+            _logger = logger;
         }
 
         // GET: api/<BookedTicketController>
@@ -22,6 +24,7 @@ namespace Exam1.Controllers
         public async Task<IActionResult> Get()
         {
             var data = await _service.Get1();
+            _logger.LogInformation("Successfully show all Booked Ticked");
             return Ok(data);
         }
 
@@ -44,7 +47,7 @@ namespace Exam1.Controllers
 
                 return NotFound(problemDetails);
             }
-
+            _logger.LogInformation("Successfully show Booked Ticket by Id");
             return Ok(data);
 
         }
@@ -130,6 +133,7 @@ namespace Exam1.Controllers
                 //----------------------
                 if (data != null)
                 {
+                    _logger.LogInformation("Successfully Book a Ticket");
                     return CreatedAtAction(nameof(Post), new { summaryPrice = dto.summaryPrice }, dto);
                 }
 
@@ -215,7 +219,7 @@ namespace Exam1.Controllers
 
                 return NotFound(problemDetails);
             }
-
+            _logger.LogInformation("Successfully Update a Booked Ticket");
             return Ok(update);
         }
 
@@ -253,7 +257,7 @@ namespace Exam1.Controllers
 
                 return NotFound(problemDetails);
             }
-
+            _logger.LogInformation("Successfully remove Booked Ticket(s)");
             return Ok(delete);
         }
     }

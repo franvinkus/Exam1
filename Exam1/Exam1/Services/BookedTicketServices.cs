@@ -124,29 +124,6 @@ namespace Exam1.Services
             await _db.SaveChangesAsync();
 
             return "success";
-
-            //var groupedData = await _db.BookedTickets
-            //    .GroupBy(bt => bt.CategoryName)
-            //    .Select(Q => new PostBookedCategoryModel
-            //    {
-            //        bookedCategoryName = Q.Key,
-            //        summaryPrice = Q.Sum(bt => bt.Price),
-            //        bookedTickets = Q.Select(bt => new PostSimpleBookedTicketModel
-            //        {
-            //            bookedTicketCode = bt.TicketCode,
-            //            bookedTicketName = bt.TicketName,
-            //            bookedPrice = bt.Price,
-            //            bookedSeat = bt.Seat,
-            //        }).ToList()
-            //    }).ToListAsync();
-
-            //var totalPrice = groupedData.Sum(c => c.summaryPrice);
-
-            //return new PostBookedTicketDTO
-            //{
-            //    summaryPrice = totalPrice,
-            //    ticketPerCategory = groupedData
-            //};
         }
 
         public async Task<PutBookedTicketRemainsListModel> Update(int id, PutSimpleBookedTicketModel request)

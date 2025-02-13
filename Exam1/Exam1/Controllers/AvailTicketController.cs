@@ -10,9 +10,11 @@ namespace Exam1.Controllers
     public class AvailTicketController : ControllerBase
     {
         public readonly AvailTicketServices _service;
-        public AvailTicketController(AvailTicketServices service)
+        public readonly ILogger<AvailTicketController> _logger;
+        public AvailTicketController(AvailTicketServices service, ILogger<AvailTicketController> logger)
         {
             _service = service;
+            _logger = logger;
         }
 
         // GET: api/<AvailTicketController>
@@ -29,6 +31,7 @@ namespace Exam1.Controllers
             )
         {
             var get = await _service.Get(categoryName,ticketCode,ticketName,maxPrice,minEventDate,maxEventDate,orderBy,orderState);
+            _logger.LogInformation("Successfully show Available Tickets");
             return Ok(get);
         }
 
