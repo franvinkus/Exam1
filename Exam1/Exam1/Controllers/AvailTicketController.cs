@@ -27,10 +27,11 @@ namespace Exam1.Controllers
             [FromQuery] DateTime? minEventDate,
             [FromQuery] DateTime? maxEventDate,
             [FromQuery] string? orderBy = "ticketCode",
-            [FromQuery] string? orderState = "asc"
+            [FromQuery] string? orderState = "asc",
+            [FromQuery] int pageNumber = 1
             )
         {
-            var get = await _service.Get(categoryName,ticketCode,ticketName,maxPrice,minEventDate,maxEventDate,orderBy,orderState);
+            var get = await _service.Get(categoryName,ticketCode,ticketName,maxPrice,minEventDate,maxEventDate,orderBy,orderState, pageNumber);
             _logger.LogInformation("Successfully show Available Tickets");
             return Ok(get);
         }

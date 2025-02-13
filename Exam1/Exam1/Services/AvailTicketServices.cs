@@ -13,7 +13,7 @@ namespace Exam1.Services
             _db = db;
         }
 
-        public async Task<List<AvailTicketModel>> Get(
+        public async Task<PaginationModel<AvailTicketModel>> Get(
             string? categoryName,
             string? ticketCode,
             string? ticketName,
@@ -21,7 +21,9 @@ namespace Exam1.Services
             DateTime? minEventDate,
             DateTime? maxEventDate,
             string? orderBy = "ticketCode",
-            string? orderState = "asc"
+            string? orderState = "asc",
+            int pageNumber = 1,
+            int pageSize = 10
             )
         {
 
@@ -75,7 +77,11 @@ namespace Exam1.Services
                 _ => query.OrderBy(Q => Q.TicketCode)
             };
 
+            var count = await query.CountAsync();
+
             var datas = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .Select(Q => new AvailTicketModel
                 {
                     eventDate = Q.EventDate.ToString("dd-MM-yyyy HH:mm:ss"),
@@ -87,8 +93,11 @@ namespace Exam1.Services
                     price = Q.Price
                 }).ToListAsync();
 
-
-            return datas;
+            return new PaginationModel<AvailTicketModel>
+            {
+                tickets = datas,
+                totalTickets = datas.Count,
+            };
         }
     }
 }

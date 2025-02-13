@@ -5,11 +5,11 @@ namespace Exam1.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TestLogging : ControllerBase
+    public class TestLoggingController : ControllerBase
     {
-        private readonly ILogger<TestLogging> _logger;
+        private readonly ILogger<TestLoggingController> _logger;
 
-        public TestLogging(ILogger<TestLogging> logger)
+        public TestLoggingController(ILogger<TestLoggingController> logger)
         {
             _logger = logger;
         }
