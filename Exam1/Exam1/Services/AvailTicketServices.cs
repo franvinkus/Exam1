@@ -1,6 +1,7 @@
 ﻿using Exam1.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Crypto.Digests;
 using Ticket.Entities;
 
 namespace Exam1.Services
@@ -26,6 +27,8 @@ namespace Exam1.Services
             int pageSize = 10
             )
         {
+            //To remove Available Tickets if quota reaches 0
+            await RemoveZeroTicket();
 
             var query = _db.AvailableTickets.AsQueryable();
 
@@ -98,6 +101,44 @@ namespace Exam1.Services
                 tickets = datas,
                 totalTickets = datas.Count,
             };
+        }
+
+
+        //Menghapus data pada BookedTicket dan AvailTicket jika data quota kedua tabel = 0
+        public async Task RemoveZeroTicket()
+        {
+            var deleteWaste = await _db.AvailableTickets
+                .Where(Q => Q.Quota == 0)
+                .Select(Q => Q.TicketCode)
+                .ToListAsync();
+
+            if (deleteWaste.Any())
+            {
+
+                var bookedTicketQuantity = await _db.BookedTickets
+                    .Where(Q => deleteWaste.Contains(Q.TicketCode) && Q.Quota == 0)
+                    .ToListAsync();
+
+                if (bookedTicketQuantity.Any())
+                {
+                    _db.BookedTickets.RemoveRange(bookedTicketQuantity);
+                    await _db.SaveChangesAsync();
+                }
+
+                var remaininBookedTickets = await _db.BookedTickets
+                    .Where(Q => deleteWaste.Contains(Q.TicketCode))
+                    .AnyAsync();
+
+                if (!remaininBookedTickets)
+                {
+                    _db.AvailableTickets.RemoveRange(
+                        _db.AvailableTickets.Where(Q => deleteWaste.Contains(Q.TicketCode))                       
+                    );
+                    await _db.SaveChangesAsync();
+                }
+
+            }
+
         }
     }
 }
