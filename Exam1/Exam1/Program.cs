@@ -1,4 +1,9 @@
+using System.Reflection;
 using Exam1.Services;
+using Exam1.Validator;
+using FluentValidation.AspNetCore;
+using FluentValidation;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Ticket.Entities;
@@ -20,9 +25,15 @@ builder.Services.AddDbContextPool<Exam1Context>(options =>
     options.UseSqlServer(constring);
 });
 
-builder.Services.AddTransient<AvailTicketServices>();
-builder.Services.AddTransient<BookedTicketServices>();
-builder.Services.AddTransient<PdfGerenatorService>();
+builder.Services.AddMediatR(Assembly.GetExecutingAssembly());
+
+
+builder.Services.AddValidatorsFromAssemblyContaining<GetAvailTicketValidator>();
+builder.Services.AddFluentValidationAutoValidation();
+
+//builder.Services.AddTransient<AvailTicketServices>();
+//builder.Services.AddTransient<BookedTicketServices>();
+//builder.Services.AddTransient<PdfGerenatorService>();
 
 //Add Serilog to the project
 builder.Host.UseSerilog((context, LoggerConfig) =>

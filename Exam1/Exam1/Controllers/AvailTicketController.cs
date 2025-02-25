@@ -1,4 +1,7 @@
-﻿using Exam1.Services;
+﻿using Exam1.Query;
+using Exam1.Services;
+using iText.Kernel.Geom;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -9,12 +12,14 @@ namespace Exam1.Controllers
     [ApiController]
     public class AvailTicketController : ControllerBase
     {
-        public readonly AvailTicketServices _service;
+        //public readonly AvailTicketServices _service;
         public readonly ILogger<AvailTicketController> _logger;
-        public AvailTicketController(AvailTicketServices service, ILogger<AvailTicketController> logger)
+        public readonly IMediator _mediator;
+        public AvailTicketController(ILogger<AvailTicketController> logger, IMediator med)
         {
-            _service = service;
+            //_service = service;
             _logger = logger;
+            _mediator = med;
         }
 
         // GET: api/<AvailTicketController>
@@ -28,10 +33,13 @@ namespace Exam1.Controllers
             [FromQuery] DateTime? maxEventDate,
             [FromQuery] string? orderBy = "ticketCode",
             [FromQuery] string? orderState = "asc",
-            [FromQuery] int pageNumber = 1
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10
             )
         {
-            var get = await _service.Get(categoryName,ticketCode,ticketName,maxPrice,minEventDate,maxEventDate,orderBy,orderState, pageNumber);
+
+            var query = new GetAvailTicketQuery(categoryName, ticketCode, ticketName, maxPrice, minEventDate, maxEventDate, orderBy, orderState, pageNumber, pageSize);
+            var get = await _mediator.Send(query);
             _logger.LogInformation("Successfully show Available Tickets");
             return Ok(get);
         }
