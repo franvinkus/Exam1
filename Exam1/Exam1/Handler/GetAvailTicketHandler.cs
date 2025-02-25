@@ -12,22 +12,14 @@ namespace Exam1.Handler
     public class GetAvailTicketHandler : IRequestHandler<GetAvailTicketQuery, PaginationModel<AvailTicketModel>>
     {
         public readonly Exam1Context _db;
-        public readonly IValidator<GetAvailTicketQuery> _validator;
 
-        public GetAvailTicketHandler(Exam1Context db, IValidator<GetAvailTicketQuery> valid)
+        public GetAvailTicketHandler(Exam1Context db )
         {
             _db = db;
-            _validator = valid;
         }
 
         public async Task<PaginationModel<AvailTicketModel>> Handle(GetAvailTicketQuery request, CancellationToken cancellationToken)
         {
-
-            var validator = await _validator.ValidateAsync(request, cancellationToken);
-            if (!validator.IsValid)
-            {
-                throw new ValidationException(validator.Errors);
-            }
 
             var query = _db.AvailableTickets.AsQueryable();
 
