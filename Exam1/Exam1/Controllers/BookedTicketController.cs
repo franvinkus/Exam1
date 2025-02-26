@@ -86,7 +86,7 @@ namespace Exam1.Controllers
         public async Task<IActionResult> Post([FromBody] PostBookedTicketQuery dto)
         {
             var validation = await _pValidator.ValidateAsync(dto);
-            if (!ModelState.IsValid)
+            if (!validation.IsValid)
             {
                 var problemDetails = new ProblemDetails
                 {
@@ -189,70 +189,70 @@ namespace Exam1.Controllers
 
         }
 
-        //// PUT api/<BookedTicketController>/5
-        //[HttpPut("edit-booked-ticket/{BookedTicketId}")]
-        //public async Task<IActionResult> Put(int BookedTicketId, [FromBody] PutSimpleBookedTicketModel model)
-        //{ 
-        //    var update = await _service.Update(BookedTicketId, model);
+        // PUT api/<BookedTicketController>/5
+        [HttpPut("edit-booked-ticket/{BookedTicketId}")]
+        public async Task<IActionResult> Put(int BookedTicketId, [FromBody] PutSimpleBookedTicketModel model)
+        {
+            var update = await _service.Update(BookedTicketId, model);
 
-        //    if (update.message == "Id tidak ada") 
-        //    {
-        //        var problemDetails = new ProblemDetails
-        //        {
-        //            Status = 404,
-        //            Type = "https://httpstatuses.com/404",
-        //            Title = "Id tidak ada",
-        //            Detail = $"Tidak ditemukan data dengan Id ini",
-        //            Instance = HttpContext.Request.Path
-        //        };
+            if (update.message == "Id tidak ada")
+            {
+                var problemDetails = new ProblemDetails
+                {
+                    Status = 404,
+                    Type = "https://httpstatuses.com/404",
+                    Title = "Id tidak ada",
+                    Detail = $"Tidak ditemukan data dengan Id ini",
+                    Instance = HttpContext.Request.Path
+                };
 
-        //        return NotFound(problemDetails);
-        //    }
+                return NotFound(problemDetails);
+            }
 
-        //    if (update.message == "Code tidak ada")
-        //    {
-        //        var problemDetails = new ProblemDetails
-        //        {
-        //            Status = 404,
-        //            Type = "https://httpstatuses.com/404",
-        //            Title = "Code tidak ada",
-        //            Detail = $"Tidak ditemukan data dengan TicketCode ini",
-        //            Instance = HttpContext.Request.Path
-        //        };
+            if (update.message == "Code tidak ada")
+            {
+                var problemDetails = new ProblemDetails
+                {
+                    Status = 404,
+                    Type = "https://httpstatuses.com/404",
+                    Title = "Code tidak ada",
+                    Detail = $"Tidak ditemukan data dengan TicketCode ini",
+                    Instance = HttpContext.Request.Path
+                };
 
-        //        return NotFound(problemDetails);
-        //    }
+                return NotFound(problemDetails);
+            }
 
-        //    if (update.message == "Quantity minimal satu")
-        //    {
-        //        var problemDetails = new ProblemDetails
-        //        {
-        //            Status = 404,
-        //            Type = "https://httpstatuses.com/404",
-        //            Title = "Quantity minimal satu",
-        //            Detail = $"Tidak bisa mengosongkan quantity",
-        //            Instance = HttpContext.Request.Path
-        //        };
+            if (update.message == "Quantity minimal satu")
+            {
+                var problemDetails = new ProblemDetails
+                {
+                    Status = 404,
+                    Type = "https://httpstatuses.com/404",
+                    Title = "Quantity minimal satu",
+                    Detail = $"Tidak bisa mengosongkan quantity",
+                    Instance = HttpContext.Request.Path
+                };
 
-        //        return NotFound(problemDetails);
-        //    }
+                return NotFound(problemDetails);
+            }
 
-        //    if (update.message == "Quantity tidak boleh lebih dari sisah")
-        //    {
-        //        var problemDetails = new ProblemDetails
-        //        {
-        //            Status = 404,
-        //            Type = "https://httpstatuses.com/404",
-        //            Title = "Quantity tidak boleh lebih dari sisah",
-        //            Detail = $"Quantity yang diganti harus melebihi dari ticket yang tersedia",
-        //            Instance = HttpContext.Request.Path
-        //        };
+            if (update.message == "Quantity tidak boleh lebih dari sisah")
+            {
+                var problemDetails = new ProblemDetails
+                {
+                    Status = 404,
+                    Type = "https://httpstatuses.com/404",
+                    Title = "Quantity tidak boleh lebih dari sisah",
+                    Detail = $"Quantity yang diganti harus melebihi dari ticket yang tersedia",
+                    Instance = HttpContext.Request.Path
+                };
 
-        //        return NotFound(problemDetails);
-        //    }
-        //    _logger.LogInformation("Successfully Update a Booked Ticket");
-        //    return Ok(update);
-        //}
+                return NotFound(problemDetails);
+            }
+            _logger.LogInformation("Successfully Update a Booked Ticket");
+            return Ok(update);
+        }
 
         //// DELETE api/<BookedTicketController>/5
         //[HttpDelete("revoke-ticket/{BookedTicketId}/{KodeTicket}/{Qty}")]
