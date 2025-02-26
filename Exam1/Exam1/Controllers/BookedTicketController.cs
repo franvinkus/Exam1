@@ -1,4 +1,5 @@
-﻿using Exam1.Models;
+﻿using System.Collections.Generic;
+using Exam1.Models;
 using Exam1.Query;
 using Exam1.Services;
 using Exam1.Validator;
@@ -23,7 +24,8 @@ namespace Exam1.Controllers
         public readonly IValidator<GetBookedTicketByIdQuery> _gValidator;
         public readonly IValidator<PostBookedTicketQuery> _pValidator;
         public readonly IValidator<PutBookedTicketQuery> _puValidator;
-        public BookedTicketController(ILogger<BookedTicketController> logger, IMediator Mediator, IValidator<GetBookedTicketByIdQuery> gValidator, IValidator<PostBookedTicketQuery> pValidator, IValidator<PutBookedTicketQuery> puValidator)
+        public readonly IValidator<DeleteBookedTicketQuery> _dValidator;
+        public BookedTicketController(ILogger<BookedTicketController> logger, IMediator Mediator, IValidator<GetBookedTicketByIdQuery> gValidator, IValidator<PostBookedTicketQuery> pValidator, IValidator<PutBookedTicketQuery> puValidator, IValidator<DeleteBookedTicketQuery> dVlidator)
         {
             //_service = service;
             _logger = logger;
@@ -31,6 +33,7 @@ namespace Exam1.Controllers
             _gValidator = gValidator;
             _pValidator = pValidator;
             _puValidator = puValidator;
+            _dValidator = dVlidator;
         }
 
         // GET: api/<BookedTicketController>
@@ -273,42 +276,58 @@ namespace Exam1.Controllers
             return Ok(send);
         }
 
-        //// DELETE api/<BookedTicketController>/5
-        //[HttpDelete("revoke-ticket/{BookedTicketId}/{KodeTicket}/{Qty}")]
-        //public async Task<IActionResult> Delete(int BookedTicketId, string KodeTicket, int Qty)
-        //{
-        //    var delete = await _service.Delete(BookedTicketId, KodeTicket, Qty);
+        // DELETE api/<BookedTicketController>/5
+        [HttpDelete("revoke-ticket/{BookedTicketId}/{KodeTicket}/{Qty}")]
+        public async Task<IActionResult> Delete(int BookedTicketId, string KodeTicket, int Qty)
+        {
+            var query = new DeleteBookedTicketQuery(BookedTicketId, KodeTicket, Qty);
+            var delete = await _mediator.Send(query);
+            var validation = await _dValidator.ValidateAsync(query);
 
+            if (!validation.IsValid)
+            {
+                var problemDetails = new ProblemDetails
+                {
+                    Status = 404,
+                    Type = "https://httpstatuses.com/404",
+                    Title = "Data Tidak Valid",
+                    Detail = $"Tidak ditemukan data seperti ini",
+                    Instance = HttpContext.Request.Path,
+                    Extensions = { ["errors"] = validation.Errors.ToDictionary(e => e.PropertyName, e => e.ErrorMessage) }
+                };
 
-        //    if(delete.errorMessage == "Ticket/Id salah")
-        //    {
-        //        var problemDetails = new ProblemDetails
-        //        {
-        //            Status = 404,
-        //            Type = "https://httpstatuses.com/404",
-        //            Title = "Data tidak ditemukan",
-        //            Detail = $"Tidak ditemukan data dengan TicketCode atau Id ini",
-        //            Instance = HttpContext.Request.Path
-        //        };
+                return NotFound(problemDetails);
+            }
 
-        //        return NotFound(problemDetails);
-        //    }
+            if (delete.errorMessage == "Ticket/Id salah")
+            {
+                var problemDetails = new ProblemDetails
+                {
+                    Status = 404,
+                    Type = "https://httpstatuses.com/404",
+                    Title = "Data tidak ditemukan",
+                    Detail = $"Tidak ditemukan data dengan TicketCode atau Id ini",
+                    Instance = HttpContext.Request.Path
+                };
 
-        //    if(delete.errorMessage == "Quantity over")
-        //    {
-        //        var problemDetails = new ProblemDetails
-        //        {
-        //            Status = 404,
-        //            Type = "https://httpstatuses.com/404",
-        //            Title = "Quantity Melebihi",
-        //            Detail = $"Jumlah quantity yang ingin dihapus melebihi",
-        //            Instance = HttpContext.Request.Path
-        //        };
+                return NotFound(problemDetails);
+            }
 
-        //        return NotFound(problemDetails);
-        //    }
-        //    _logger.LogInformation("Successfully remove Booked Ticket(s)");
-        //    return Ok(delete);
-        //}
+            if (delete.errorMessage == "Quantity over")
+            {
+                var problemDetails = new ProblemDetails
+                {
+                    Status = 404,
+                    Type = "https://httpstatuses.com/404",
+                    Title = "Quantity Melebihi",
+                    Detail = $"Jumlah quantity yang ingin dihapus melebihi",
+                    Instance = HttpContext.Request.Path
+                };
+
+                return NotFound(problemDetails);
+            }
+            _logger.LogInformation("Successfully remove Booked Ticket(s)");
+            return Ok(delete);
+        }
     }
 }
