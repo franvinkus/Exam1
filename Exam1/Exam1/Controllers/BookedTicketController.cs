@@ -22,13 +22,15 @@ namespace Exam1.Controllers
         public readonly IMediator _mediator;
         public readonly IValidator<GetBookedTicketByIdQuery> _gValidator;
         public readonly IValidator<PostBookedTicketQuery> _pValidator;
-        public BookedTicketController(ILogger<BookedTicketController> logger, IMediator Mediator, IValidator<GetBookedTicketByIdQuery> gValidator, IValidator<PostBookedTicketQuery> pValidator)
+        public readonly IValidator<PutBookedTicketQuery> _puValidator;
+        public BookedTicketController(ILogger<BookedTicketController> logger, IMediator Mediator, IValidator<GetBookedTicketByIdQuery> gValidator, IValidator<PostBookedTicketQuery> pValidator, IValidator<PutBookedTicketQuery> puValidator)
         {
             //_service = service;
             _logger = logger;
             _mediator = Mediator;
             _gValidator = gValidator;
             _pValidator = pValidator;
+            _puValidator = puValidator;
         }
 
         // GET: api/<BookedTicketController>
@@ -191,11 +193,28 @@ namespace Exam1.Controllers
 
         // PUT api/<BookedTicketController>/5
         [HttpPut("edit-booked-ticket/{BookedTicketId}")]
-        public async Task<IActionResult> Put(int BookedTicketId, [FromBody] PutSimpleBookedTicketModel model)
+        public async Task<IActionResult> Put(int BookedTicketId, [FromBody] List<PutBookedTicketDTO> model)
         {
-            var update = await _service.Update(BookedTicketId, model);
+            var update = new PutBookedTicketQuery(BookedTicketId, model);
+            var send = await _mediator.Send(update);
+            var validation = await _puValidator.ValidateAsync(update);
 
-            if (update.message == "Id tidak ada")
+            if (!validation.IsValid)
+            {
+                var problemDetails = new ProblemDetails
+                {
+                    Status = 404,
+                    Type = "https://httpstatuses.com/404",
+                    Title = "Data Tidak Valid",
+                    Detail = $"Tidak ditemukan data seperti ini",
+                    Instance = HttpContext.Request.Path,
+                    Extensions = { ["errors"] = validation.Errors.ToDictionary(e => e.PropertyName, e => e.ErrorMessage) }
+                };
+
+                return NotFound(problemDetails);
+            }
+
+            if (send.message == "Id tidak ada")
             {
                 var problemDetails = new ProblemDetails
                 {
@@ -209,7 +228,7 @@ namespace Exam1.Controllers
                 return NotFound(problemDetails);
             }
 
-            if (update.message == "Code tidak ada")
+            if (send.message == "Code tidak ada")
             {
                 var problemDetails = new ProblemDetails
                 {
@@ -223,7 +242,7 @@ namespace Exam1.Controllers
                 return NotFound(problemDetails);
             }
 
-            if (update.message == "Quantity minimal satu")
+            if (send.message == "Quantity minimal satu")
             {
                 var problemDetails = new ProblemDetails
                 {
@@ -237,7 +256,7 @@ namespace Exam1.Controllers
                 return NotFound(problemDetails);
             }
 
-            if (update.message == "Quantity tidak boleh lebih dari sisah")
+            if (send.message == "Quantity tidak boleh lebih dari sisah")
             {
                 var problemDetails = new ProblemDetails
                 {
@@ -251,7 +270,7 @@ namespace Exam1.Controllers
                 return NotFound(problemDetails);
             }
             _logger.LogInformation("Successfully Update a Booked Ticket");
-            return Ok(update);
+            return Ok(send);
         }
 
         //// DELETE api/<BookedTicketController>/5
