@@ -1,10 +1,12 @@
 ﻿using Exam1.Models;
 using Exam1.Query;
 using Exam1.Services;
+using Exam1.Validator;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Model;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -18,13 +20,15 @@ namespace Exam1.Controllers
         //public readonly BookedTicketServices _service;
         private readonly ILogger<BookedTicketController> _logger;
         public readonly IMediator _mediator;
-        public readonly IValidator<GetBookedTicketByIdQuery> _validator;
-        public BookedTicketController(ILogger<BookedTicketController> logger, IMediator Mediator, IValidator<GetBookedTicketByIdQuery> validator)
+        public readonly IValidator<GetBookedTicketByIdQuery> _gValidator;
+        public readonly IValidator<PostBookedTicketQuery> _pValidator;
+        public BookedTicketController(ILogger<BookedTicketController> logger, IMediator Mediator, IValidator<GetBookedTicketByIdQuery> gValidator, IValidator<PostBookedTicketQuery> pValidator)
         {
             //_service = service;
             _logger = logger;
             _mediator = Mediator;
-            _validator = validator;
+            _gValidator = gValidator;
+            _pValidator = pValidator;
         }
 
         // GET: api/<BookedTicketController>
@@ -42,7 +46,7 @@ namespace Exam1.Controllers
         public async Task<IActionResult> Get(int BookedTicketId)
         {
             var query = new GetBookedTicketByIdQuery(BookedTicketId);
-            var validation = await _validator.ValidateAsync(query);
+            var validation = await _gValidator.ValidateAsync(query);
 
             if (!validation.IsValid)
             {
@@ -77,111 +81,113 @@ namespace Exam1.Controllers
 
         }
 
-        //// POST api/<BookedTicketController>
-        //[HttpPost("book-ticket.")]
-        //public async Task<IActionResult> Post([FromBody] PostBookedTicketDTO dto)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        var problemDetails = new ProblemDetails
-        //        {
-        //            Status = 404,
-        //            Type = "https://httpstatuses.com/404",
-        //            Title = "Data tidak ditemukan",
-        //            Detail = $"Tidak ditemukan data seperti ini",
-        //            Instance = HttpContext.Request.Path
-        //        };
+        // POST api/<BookedTicketController>
+        [HttpPost("book-ticket.")]
+        public async Task<IActionResult> Post([FromBody] PostBookedTicketQuery dto)
+        {
+            var validation = await _pValidator.ValidateAsync(dto);
+            if (!ModelState.IsValid)
+            {
+                var problemDetails = new ProblemDetails
+                {
+                    Status = 404,
+                    Type = "https://httpstatuses.com/404",
+                    Title = "Data tidak ditemukan",
+                    Detail = $"Tidak ditemukan data seperti ini",
+                    Instance = HttpContext.Request.Path,
+                    Extensions = { ["errors"] = validation.Errors.ToDictionary(e => e.PropertyName, e => e.ErrorMessage) }
+                };
 
-        //        return NotFound(problemDetails);
-        //    }
+                return NotFound(problemDetails);
+            }
 
-        //    try
-        //    {
-        //        var data = await _service.Post(dto);
+            try
+            {
+                var data = await _mediator.Send(dto);
 
-        //        if (data == null)
-        //        {
-        //            var problemDetails = new ProblemDetails
-        //            {
-        //                Status = 404,
-        //                Type = "https://httpstatuses.com/404",
-        //                Title = "Data tidak Ditemukan",
-        //                Detail = $"TicketCode yang dimasukkan salah",
-        //                Instance = HttpContext.Request.Path
-        //            };
+                if (data == null)
+                {
+                    var problemDetails = new ProblemDetails
+                    {
+                        Status = 404,
+                        Type = "https://httpstatuses.com/404",
+                        Title = "Data tidak Ditemukan",
+                        Detail = $"TicketCode yang dimasukkan salah",
+                        Instance = HttpContext.Request.Path
+                    };
 
-        //            return NotFound(problemDetails);
-        //        }
+                    return NotFound(problemDetails);
+                }
 
-        //        if(data == "Sudah Expired")
-        //        {
-        //            var problemDetails = new ProblemDetails
-        //            {
-        //                Status = 404,
-        //                Type = "https://httpstatuses.com/404",
-        //                Title = "Expired",
-        //                Detail = $"Tanggal Event sudah Lewat",
-        //                Instance = HttpContext.Request.Path
-        //            };
+                if (data == "Sudah Expired")
+                {
+                    var problemDetails = new ProblemDetails
+                    {
+                        Status = 404,
+                        Type = "https://httpstatuses.com/404",
+                        Title = "Expired",
+                        Detail = $"Tanggal Event sudah Lewat",
+                        Instance = HttpContext.Request.Path
+                    };
 
-        //            return NotFound(problemDetails);
-        //        }
+                    return NotFound(problemDetails);
+                }
 
-        //        if (data == "Habis")
-        //        {
-        //            var problemDetails = new ProblemDetails
-        //            {
-        //                Status = 404,
-        //                Type = "https://httpstatuses.com/404",
-        //                Title = "Quota tidak cukup",
-        //                Detail = $"Kuota sudah Habis",
-        //                Instance = HttpContext.Request.Path
-        //            };
+                if (data == "Habis")
+                {
+                    var problemDetails = new ProblemDetails
+                    {
+                        Status = 404,
+                        Type = "https://httpstatuses.com/404",
+                        Title = "Quota tidak cukup",
+                        Detail = $"Kuota sudah Habis",
+                        Instance = HttpContext.Request.Path
+                    };
 
-        //            return NotFound(problemDetails);
-        //        }
+                    return NotFound(problemDetails);
+                }
 
-        //        if (data == "Tidak Cukup")
-        //        {
-        //            var problemDetails = new ProblemDetails
-        //            {
-        //                Status = 404,
-        //                Type = "https://httpstatuses.com/404",
-        //                Title = "Quota tidak cukup",
-        //                Detail = $"Sisa kuota tidak mencukupi total pesanan",
-        //                Instance = HttpContext.Request.Path
-        //            };
+                if (data == "Tidak Cukup")
+                {
+                    var problemDetails = new ProblemDetails
+                    {
+                        Status = 404,
+                        Type = "https://httpstatuses.com/404",
+                        Title = "Quota tidak cukup",
+                        Detail = $"Sisa kuota tidak mencukupi total pesanan",
+                        Instance = HttpContext.Request.Path
+                    };
 
-        //            return NotFound(problemDetails);
-        //        }
+                    return NotFound(problemDetails);
+                }
 
-        //        //----------------------
-        //        if (data != null)
-        //        {
-        //            _logger.LogInformation("Successfully Book a Ticket");
-        //            return CreatedAtAction(nameof(Post), new { summaryPrice = dto.summaryPrice }, dto);
-        //        }
+                //----------------------
+                if (data != null)
+                {
+                    _logger.LogInformation("Successfully Book a Ticket");
+                    return CreatedAtAction(nameof(Post), new { summaryPrice = dto.summaryPrice }, dto);
+                }
 
-        //        else
-        //        {
-        //            var problemDetails = new ProblemDetails
-        //            {
-        //                Status = 404,
-        //                Type = "https://httpstatuses.com/404",
-        //                Title = "Gagal menyimpan Data",
-        //                Detail = $"TGagal menyimpan Data",
-        //                Instance = HttpContext.Request.Path
-        //            };
+                else
+                {
+                    var problemDetails = new ProblemDetails
+                    {
+                        Status = 404,
+                        Type = "https://httpstatuses.com/404",
+                        Title = "Gagal menyimpan Data",
+                        Detail = $"TGagal menyimpan Data",
+                        Instance = HttpContext.Request.Path
+                    };
 
-        //            return NotFound(problemDetails);
-        //        }
-        //    }
-        //    catch (Exception ex) 
-        //    {
-        //        return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-        //    }
+                    return NotFound(problemDetails);
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
 
-        //}
+        }
 
         //// PUT api/<BookedTicketController>/5
         //[HttpPut("edit-booked-ticket/{BookedTicketId}")]
