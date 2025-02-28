@@ -36,9 +36,9 @@ namespace Exam1.Handler
             }
 
             //filter Ticket Name
-            if (!string.IsNullOrEmpty(request.categoryName))
+            if (!string.IsNullOrEmpty(request.ticketName))
             {
-                query = query.Where(Q => Q.CategoryName.ToLower().Contains(request.categoryName.Trim().ToLower()));
+                query = query.Where(Q => Q.TicketName.ToLower().Contains(request.ticketName.Trim().ToLower()));
             }
 
             //filter Max Price
@@ -92,6 +92,7 @@ namespace Exam1.Handler
                 tickets = datas,
                 totalTickets = datas.Count,
             };
+            
         }
 
         //Menghapus data pada BookedTicket dan AvailTicket jika data quota kedua tabel = 0

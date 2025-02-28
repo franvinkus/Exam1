@@ -11,7 +11,7 @@ using Ticket.Entities;
 
 namespace Exam1.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v1")]
     [ApiController]
     public class AvailTicketController : ControllerBase
     {
@@ -28,7 +28,7 @@ namespace Exam1.Controllers
         }
 
         // GET: api/<AvailTicketController>
-        [HttpGet("Show All Data")]
+        [HttpGet("Show-All-Data")]
         public async Task<IActionResult> Get(
             [FromQuery] string? categoryName,
             [FromQuery] string? ticketCode,
