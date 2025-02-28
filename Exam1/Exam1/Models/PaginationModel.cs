@@ -5,5 +5,6 @@
         public List<T> tickets { get; set; } = new List<T>();
 
         public int totalTickets { get; set; }
+        public int totalPage { get; set; }
     }
 }

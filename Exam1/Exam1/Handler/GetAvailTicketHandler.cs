@@ -91,6 +91,7 @@ namespace Exam1.Handler
             {
                 tickets = datas,
                 totalTickets = datas.Count,
+                totalPage = (int)Math.Ceiling((double)count / request.pageSize)
             };
             
         }

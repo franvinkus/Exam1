@@ -87,7 +87,7 @@ namespace Exam1.Controllers
         }
 
         // POST api/<BookedTicketController>
-        [HttpPost("book-ticket.")]
+        [HttpPost("book-ticket")]
         public async Task<IActionResult> Post([FromBody] PostBookedTicketQuery dto)
         {
             var validation = await _pValidator.ValidateAsync(dto);
