@@ -6,7 +6,7 @@ using Ticket.Entities;
 
 namespace Exam1.Handler
 {
-    public class GetAllBookedTicketHandler : IRequestHandler<GetAllBookedTicketQuery, List<GetAllBookedCategoryModel>>
+    public class GetAllBookedTicketHandler : IRequestHandler<GetAllBookedTicketQuery, PaginationBookedAllModel<GetAllBookedCategoryModel>>
     {
         public readonly Exam1Context _db;
         public GetAllBookedTicketHandler(Exam1Context db)
@@ -14,13 +14,20 @@ namespace Exam1.Handler
             _db = db;
         }
 
-        public async Task<List<GetAllBookedCategoryModel>> Handle(GetAllBookedTicketQuery request, CancellationToken cancellationToken)
+        public async Task<PaginationBookedAllModel<GetAllBookedCategoryModel>> Handle(GetAllBookedTicketQuery request, CancellationToken cancellationToken)
         {
+
+            var query =  _db.BookedTickets.AsQueryable();
+
             var datas = await _db.BookedTickets
                 .GroupBy(bt => bt.CategoryName.Trim())
                 .ToListAsync();
 
-            var data = datas
+            var data = await query
+                .OrderBy(Q => Q.CategoryName)
+                .Skip((request.pageNumber - 1) * request.pageSize)
+                .Take(request.pageSize)
+                .GroupBy(bt => bt.CategoryName.Trim())
                 .Select(Q => new GetAllBookedCategoryModel
                 {
                     qtyPerCategory = Q.Sum(bt => bt.Quota),
@@ -33,14 +40,20 @@ namespace Exam1.Handler
                         bookedEventDate = bt.EventDate.ToString("dd-MM-yyyy HH:mm:ss"),
                         id = bt.BookedId
                     }).ToList()
-                }).ToList();
+                }).ToListAsync();
+            int totalRecords = await query.CountAsync();
+
 
             if (data == null || !data.Any())
             {
                 return null;
             }
 
-            return data;
+            return new PaginationBookedAllModel<GetAllBookedCategoryModel> { 
+                bookedTickets = data,
+                totalPages = (int)Math.Ceiling((double)totalRecords / request.pageSize)
+            };
+
         }
     }
 

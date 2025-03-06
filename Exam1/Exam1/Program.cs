@@ -39,7 +39,7 @@ builder.Services.AddFluentValidationAutoValidation();
 
 //builder.Services.AddTransient<AvailTicketServices>();
 //builder.Services.AddTransient<BookedTicketServices>();
-//builder.Services.AddTransient<PdfGerenatorService>();
+builder.Services.AddTransient<PdfGerenatorService>();
 
 //Add Serilog to the project
 builder.Host.UseSerilog((context, LoggerConfig) =>

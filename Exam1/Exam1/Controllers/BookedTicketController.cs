@@ -38,9 +38,11 @@ namespace Exam1.Controllers
 
         // GET: api/<BookedTicketController>
         [HttpGet("Test-Show-All-Data")]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
         {
-            var query = new GetAllBookedTicketQuery();
+            var query = new GetAllBookedTicketQuery(pageNumber, pageSize);
             var data = await _mediator.Send(query);
             _logger.LogInformation("Successfully show all Booked Ticked");
             return Ok(data);
